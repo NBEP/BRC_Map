@@ -9,8 +9,8 @@
 - Remove "fishery" column from report card, use * system instead?
 
 ## Functions
-- assign score
-- drop site columns
+- Assign score
+- Drop site columns
 - DEM report
 
 ## Accessibility
@@ -28,5 +28,5 @@
 - Accessibility module is bugged
 ### General
 - ARIA tags
-- Are <div> tags still an issue?
+- Are div tags still an issue?
 - General accessibility testing (especially with screen reader)
