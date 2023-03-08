@@ -1,7 +1,7 @@
 # BRC_Map
 notes to self: convert everything to package... 
 
-##To do before deploying:
+## To do before deploying:
 - Add rivers to legend
 - Add conductivity & water depth
 -- To csv
@@ -10,13 +10,13 @@ notes to self: convert everything to package...
 --- Plotlines
 - Add caption to reportcard tabel
 
-##Functions:
+## Functions:
 - assign score
 - drop site columns
 - DEM report formatting
 
-##Accessibility:
-###Leaflet
+## Accessibility:
+### Leaflet
 - Fullscreen
 - Reset zoom
 - Loading icon
@@ -24,11 +24,11 @@ notes to self: convert everything to package...
 - Marker size increase on mouseover
 - Make polygons/polylines work with keyboards, screen readers
 - Make screenreaders ignore basemap 
-###Datatable
+### Datatable
 - Is it accessible? Tweak or replace?
-###Highcharter
+### Highcharter
 - Accessibility module is bugged
-###General
+### General
 -- ARIA tags
 -- Are <div> tags still an issue?
 -- General accessibility testing (especially with screen reader)
