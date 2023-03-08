@@ -1,6 +1,6 @@
-# BRC_Map
+# To Do List
 
-## To do
+## High Priority
 - Convert to package
 - Add rivers to legend
 - Add conductivity & water depth columns to csv
