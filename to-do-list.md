@@ -8,12 +8,12 @@
 - Add caption to report card
 - Remove "fishery" column from report card, use * system instead?
 
-## Functions
+## Functions for Dan
 - Assign score
 - Drop site columns
 - DEM report
 
-## Accessibility
+## Accessibility Concerns
 ### Leaflet
 - Fullscreen
 - Reset zoom
