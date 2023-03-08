@@ -1,21 +1,19 @@
 # BRC_Map
-notes to self: convert everything to package... 
 
-## To do before deploying:
+## High Priority To do List
+- Convert to package
 - Add rivers to legend
-- Add conductivity & water depth
--- To csv
--- To graphs
---- Caption
---- Plotlines
-- Add caption to reportcard tabel
+- Add conductivity & water depth columns to csv
+- Add conductivity & water depth data to graphs (caption, plotlines)
+- Add caption to report card
+- Remove "fishery" column from report card, use * system instead?
 
-## Functions:
+## Functions
 - assign score
 - drop site columns
-- DEM report formatting
+- DEM report
 
-## Accessibility:
+## Accessibility
 ### Leaflet
 - Fullscreen
 - Reset zoom
@@ -29,6 +27,6 @@ notes to self: convert everything to package...
 ### Highcharter
 - Accessibility module is bugged
 ### General
--- ARIA tags
--- Are <div> tags still an issue?
--- General accessibility testing (especially with screen reader)
+- ARIA tags
+- Are <div> tags still an issue?
+- General accessibility testing (especially with screen reader)
