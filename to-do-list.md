@@ -11,6 +11,7 @@
 - Assign score
 - Drop site columns
 - DEM report
+- All data to RData format....
 
 ## Accessibility Concerns
 ### Leaflet
