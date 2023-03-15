@@ -23,7 +23,7 @@
 - Make polygons/polylines work with keyboards, screen readers
 - Make screenreaders ignore basemap 
 ### Datatable
-- Is it accessible? Tweak or replace?
+- Replace with reactable
 ### Highcharter
 - Accessibility module is bugged
 ### General
