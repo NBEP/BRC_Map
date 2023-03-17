@@ -1,0 +1,66 @@
+---
+output: pdf_document
+params:
+  df_report: NULL
+  year: NULL
+  always_allow_html: true
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{xcolor}
+---
+
+```{r setup, echo = FALSE, message = FALSE}
+## Import packages
+library(kableExtra)
+```
+
+```{r table, echo = FALSE}
+
+# Drop extra rows
+df_report <- params$df_report %>%
+  # Add * indicator for coldwater fisheries
+  mutate(Site=ifelse(Fishery=="Coldwater", paste(Site, "*"), Site)) %>%
+  # Drop extra columns
+  select(Site, Town, Watershed, Parameter, Score)
+
+row_count <- nrow(df_report)
+
+# par_count <- length(unique(df_report[["Parameter"]]))
+
+# Create kable
+kable(df_report, "latex", longtable = T, booktabs = T, 
+      caption = paste0("Blackstone River Report Card (", params$year, ")")
+      ) %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  # Set max column width
+  column_spec(1:4, width = "8em") %>%
+  # Style header
+  row_spec(0, bold = T, background = "#EEEEEE") %>%
+  # Color code final column
+  column_spec(5, background=case_when(
+    df_report$Score == 'Excellent' ~  '#BBCCEE',
+    df_report$Score == 'Good' ~ '#CCEEFF',
+    df_report$Score == 'Fair' ~ '#EEEEBB', 
+    df_report$Score == 'Poor' ~ '#FFCCCC',
+    df_report$Score == 'No Data' ~ '#FFFFFF')
+  ) %>%
+  # Add line after each row
+  row_spec(1:row_count, hline_after=T) %>%
+  # Add footnote
+  kableExtra::footnote("* Coldwater fishery")
+
+# NOTE: did not group data by site because it leads to errors across pages
+
+```
