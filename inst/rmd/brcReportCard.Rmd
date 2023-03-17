@@ -26,7 +26,7 @@ header-includes:
 library(kableExtra)
 ```
 
-```{r table, echo = FALSE}
+```{r table, echo = FALSE, message = FALSE}
 
 # Drop extra rows
 df_report <- params$df_report %>%
