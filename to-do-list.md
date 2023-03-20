@@ -1,17 +1,13 @@
 # To Do List
 
 ## High Priority
-- Convert to package
 - Add conductivity & water depth columns to csv
 - Add conductivity & water depth data to graphs (caption, plotlines)
 - Add caption to report card
 - Remove "fishery" column from report card, use * system instead?
 
-## Functions for Dan
-- Assign score
-- Drop site columns
+## Functions
 - DEM report
-- All data to RData format....
 
 ## Accessibility Concerns
 ### Leaflet
