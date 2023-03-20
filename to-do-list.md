@@ -23,6 +23,7 @@
 ### Highcharter
 - Accessibility module is bugged
 ### General
+- Loading icon for downloads (PDF, csv, excel)
 - ARIA tags
 - Are div tags still an issue?
 - General accessibility testing (especially with screen reader)
