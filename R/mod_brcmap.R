@@ -1,8 +1,8 @@
 ################################### HEADER ###################################
 #  TITLE: mod_brcmap.R
-#  DESCRIPTION: A module for a simple map for the BRCWQDM App
+#  DESCRIPTION: A module for the map for the BRC web map
 #  AUTHOR(S): Mariel Sorlien, Dan Crocker
-#  DATE LAST UPDATED: 2023-03-17
+#  DATE LAST UPDATED: 2023-03-21
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
@@ -87,35 +87,6 @@ BRCMAP_SERVER <- function(id, brcvar) {
       bs_river <- shp_river %>%
         mutate(Fishery = case_when(Coldwater=='Yes'~'Coldwater Fishery',
                                    Coldwater=='No'~'Not Coldwater Fishery'))
-
-      # Filter for selected watersheds
-      bs_river_watershed <- reactive({
-        req(brcvar$riverSelect())
-
-        df_river <- bs_river %>%
-          filter(HUC12_Name %in% brcvar$riverSelect())
-
-        return(df_river)
-      })
-
-      # Filter for selected towns
-      bs_river_town <- reactive({
-        req(brcvar$townSelect())
-
-        df_river <- bs_river %>%
-          filter(Town_Name %in% brcvar$townSelect())
-
-        return(df_river)
-      })
-
-      # Toggle between selected towns & watersheds
-      bs_river_filter <- reactive({
-        if (brcvar$riverTown() == 'river') {
-          bs_river_watershed()
-        } else {
-          bs_river_town()
-        }
-      })
 
       # Icons ----
       # * Site icons ----
@@ -253,16 +224,14 @@ BRCMAP_SERVER <- function(id, brcvar) {
                       group = 'Towns'
           ) %>%
           # * Rivers ----
-          addPolylines(data = bs_river_filter(),
-                       layerId = bs_river_filter(),
+          addPolylines(data = bs_river,
+                       layerId = bs_river,
                        # Label
-                       label = ~Fishery,
+                       label = ~gnis_name,
                        labelOptions = labelOptions(textsize = "15px"),
                        # Popup
                        popup = ~paste0(
-                                       '<br/><b>Town: </b>', Town_Name, ', ',
-                                       State,
-                                       '<br/><b>Watershed:</b> ', HUC12_Name,
+                                       '<br/><b>Name: </b>', gnis_name,
                                        '<br/><b>Coldwater Fishery:</b> ',
                                        Coldwater),
                        # Stroke
