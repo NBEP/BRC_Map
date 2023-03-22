@@ -1,8 +1,8 @@
 ################################### HEADER ###################################
 #  TITLE: fun_brc_sites.R
-#  DESCRIPTION: Formats site data for BRC_Map R Shiny app
+#  DESCRIPTION: Formats site data for BRC_Map
 #  AUTHOR(S): Mariel Sorlien
-#  DATE LAST UPDATED: 2023-03-21
+#  DATE LAST UPDATED: 2023-03-22
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
@@ -26,9 +26,14 @@ brcmap_format_sites <- function(sites_db, output_path){
     # Select columns
     select(SITE_NUMBER, BRC_CODE, SITE_NAME, LATITUDE, LONGITUDE,
            WATERBODY_NAME, ZONE, CFR, TOWN, STATE, HUC12_NUM, HUC_NAME,
-           CONDUCTIVITY_USCM, WATER_DEPTH_FT)
+           CONDUCTIVITY_USCM, WATER_DEPTH_FT) %>%
+    # Tweak column names
+    rename(HUC12_NAME=HUC_NAME) %>%
+    # Tweak HUC12_NUM, ensure starts with zero
+    mutate(HUC12_NUM=ifelse(nchar(HUC12_NUM)<12, paste0("0", HUC12_NUM),
+                            HUC12_NUM))
 
-  # Save as rds
+  # Save as rda
   save(brc_sites, file=file.path(output_path, 'brc_sites.rda'))
 }
 
