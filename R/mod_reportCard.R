@@ -2,16 +2,14 @@
 #  TITLE: mod_reportCard.R
 #  DESCRIPTION: A module that generates a report card for BRC water quality data
 #  AUTHOR(S): Mariel Sorlien
-#  DATE LAST UPDATED: 2023-03-17
+#  DATE LAST UPDATED: 2023-03-27
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
 
-library(DT)
-
-# For exporting as pdf
-library(rmarkdown)
-library(knitr)
+# library(DT)
+# library(rmarkdown)
+# library(knitr)
 
 ########################################################################.
 ###                       User Interface                            ####
@@ -47,10 +45,10 @@ REPORTCARD_SERVER <- function(id, brcvar) {
 
       # * Filter scores for selected parameters ----
       df_score <- reactive({
-        req(brcvar$catSelect())
+        req(brcvar$catSelect_reportCard())
 
-        df_score <- brcvar$df_score() %>%
-          filter(PARAMETER %in% brcvar$catSelect())
+        df_score <- brcvar$df_data_score() %>%
+          filter(PARAMETER %in% brcvar$catSelect_reportCard())
 
         return(df_score)
       })
@@ -63,7 +61,7 @@ REPORTCARD_SERVER <- function(id, brcvar) {
 
         # Generate list of all possible parameter/site combos
         df_param <- crossing('BRC_CODE' = unique(df_site$BRC_CODE),
-                             'PARAMETER' = brcvar$catSelect())
+                             'PARAMETER' = brcvar$catSelect_reportCard())
 
         # Merge df_site, df_score, df_param
         df_site_param <- merge(x=df_site, y=df_param, by='BRC_CODE')
@@ -81,11 +79,12 @@ REPORTCARD_SERVER <- function(id, brcvar) {
           # Combine TOWN, STATE in to single column (Town)
           unite('Town', TOWN:STATE, sep=', ') %>%
           # Rename columns
-          rename(Site=SITE_NAME, Fishery=FISHERY, Waterbody=WATERBODY_NAME,
-                 Watershed=HUC12_NAME, Parameter=PARAMETER, Score=SCORE)  %>%
+          rename(Site=SITE_NAME, 'Coldwater Fishery'=CFR,
+                 Waterbody=WATERBODY_NAME, Watershed=HUC12_NAME,
+                 Parameter=PARAMETER, Score=SCORE)  %>%
           # Arrange columns, drop any column not listed
-          select(Site, Waterbody, Fishery, Town, Watershed, Parameter,
-                 Score) %>%
+          select(Site, Waterbody, 'Coldwater Fishery', Town, Watershed,
+                 Parameter, Score) %>%
           # Sort
           arrange(Site, Parameter)
       })
