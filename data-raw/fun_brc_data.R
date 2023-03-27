@@ -2,7 +2,7 @@
 #  TITLE: fun_brc_data.R
 #  DESCRIPTION: Formats numerical data for BRC_Map, calculates score
 #  AUTHOR(S): Mariel Sorlien
-#  DATE LAST UPDATED: 2023-03-23
+#  DATE LAST UPDATED: 2023-03-27
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
@@ -93,12 +93,12 @@ brcmap_format_data <- function(parameters_db, sites_db, data_num_db,
   # * Process numeric data ----
   df_data_num <- brc_data_num %>%
     # Drop extra rows
-    filter(SAMPLE_TYPE %in% c('Grab', 'Composite'),
+    filter(SAMPLE_TYPE %in% c('Grab', 'Composite', 'Replicate'),
            RESULT != -999999,
            !PARAMETER %in% c('Air Temperature', 'Water Depth')) %>%
     # Sort by SAMPLE_TYPE
     arrange(DATE_TIME, BRC_CODE, PARAMETER, SAMPLE_TYPE) %>%
-    # Group data, take first entry (composite if available, otherwise grab)
+    # Group data, take first entry (composite, otherwise grab/replicate)
     group_by(BRC_CODE, DATE_TIME, PARAMETER, UNITS) %>%
     summarise(RESULT = first(RESULT),
               SAMPLE_TYPE = first(SAMPLE_TYPE),
