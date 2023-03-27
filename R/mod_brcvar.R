@@ -225,8 +225,8 @@ BRCVAR_UI <- function(id, brc_data_num, brc_data_text, brc_data_score) {
 ###                         MODULE SERVER                           ####
 ########################################################################.
 
-BRCVAR_SERVER <- function(id, brc_sites, brc_parameters, brc_data_num,
-                          brc_data_score, tabSelect) {
+BRCVAR_SERVER <- function(id, brc_sites, brc_parameters, brc_data_score, 
+                          tabSelect) {
   moduleServer(id, function(input, output, session) {
 
 
@@ -304,19 +304,6 @@ BRCVAR_SERVER <- function(id, brc_sites, brc_parameters, brc_data_num,
       return(df_site)
     })
 
-    # * Filter numeric data for selected date range ----
-    df_data_num <- reactive({
-      # required inputs
-      req(input$dateRange)
-
-      df_data_num <- brc_data_num %>%
-        # Between leads to null values because ????
-        filter((DATE_TIME >= input$dateRange[1]) &
-                 (DATE_TIME <= input$dateRange[2]))
-
-      return(df_data_num)
-    })
-
     # * Filter scores for selected year ----
     df_data_score <- reactive({
       req(input$yearSelect)
@@ -343,7 +330,6 @@ BRCVAR_SERVER <- function(id, brc_sites, brc_parameters, brc_data_num,
         yearSelect = reactive({ input$yearSelect }),
 
         df_site = reactive({ df_site() }),
-        df_data_num = reactive({ df_data_num() }),
         df_data_score = reactive({ df_data_score() })
       )
     )
