@@ -21,7 +21,7 @@ BRCVAR_UI <- function(id, brc_data_num, brc_data_text, brc_data_score) {
   # List parameters ----
   parList_score <- sort(unique(brc_data_score$PARAMETER))
   parList_graph <- sort(c('Water Depth', parList_score))
-  parList_all <- sort(c(parList_num, unique(brc_data_text$PARAMETER)))
+  parList_all <- sort(c(parList_graph, unique(brc_data_text$PARAMETER)))
 
   # List watersheds -----
   riverList <- c('Abbott Run','Branch River', 'Chepachet River',
@@ -225,7 +225,7 @@ BRCVAR_UI <- function(id, brc_data_num, brc_data_text, brc_data_score) {
 ###                         MODULE SERVER                           ####
 ########################################################################.
 
-BRCVAR_SERVER <- function(id, brc_sites, brc_parameters, brc_data_score, 
+BRCVAR_SERVER <- function(id, brc_sites, brc_parameters, brc_data_score,
                           tabSelect) {
   moduleServer(id, function(input, output, session) {
 
