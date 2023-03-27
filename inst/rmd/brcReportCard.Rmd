@@ -22,16 +22,16 @@ header-includes:
 ---
 
 ```{r setup, echo = FALSE, message = FALSE}
-## Import packages
+# Import packages
 library(kableExtra)
 ```
 
-```{r table, echo = FALSE, message = FALSE}
+```{r table, echo = FALSE, warnings = FALSE}
 
 # Drop extra rows
 df_report <- params$df_report %>%
   # Add * indicator for coldwater fisheries
-  mutate(Site=ifelse(Fishery=="Coldwater", paste(Site, "*"), Site)) %>%
+  mutate(Site=ifelse('Coldwater Fishery'=="Yes", paste(Site, "*"), Site)) %>%
   # Drop extra columns
   select(Site, Town, Watershed, Parameter, Score)
 
