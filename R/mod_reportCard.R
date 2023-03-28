@@ -7,9 +7,9 @@
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
 
-# library(DT)
-# library(rmarkdown)
-# library(knitr)
+library(DT)
+library(rmarkdown)
+library(knitr)
 
 ########################################################################.
 ###                       User Interface                            ####
