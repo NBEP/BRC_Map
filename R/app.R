@@ -7,6 +7,9 @@
 #  R version 4.2.0 (2022-04-22 ucrt)  x86_64
 ##############################################################################.
 
+library(shiny)
+library(tidyverse)
+
 BRC_Map <- function(...){
 
   ########################################################################.
@@ -71,12 +74,13 @@ BRC_Map <- function(...){
   ########################################################################.
   server <- function(input, output, session) {
     # Add module servers ----
-    brcvar <- BRCVAR_SERVER('brcvar', brc_sites, brc_parameters, brc_data_num,
-                            brc_data_score, reactive({ input$tabset }))
+    brcvar <- BRCVAR_SERVER('brcvar', brc_sites, brc_parameters, brc_data_score, 
+                            reactive({ input$tabset }))
     BRCMAP_SERVER('brcmap', brcvar)
     REPORTCARD_SERVER('reportCard', brcvar)
-    BRCGRAPHS_SERVER('brcgraphs', brc_sites, brc_parameters, brcvar)
-    BRCDOWNLOAD_SERVER('brcdownload', brc_data_text, brcvar)
+    BRCGRAPHS_SERVER('brcgraphs', brc_sites, brc_parameters, brc_data_num, 
+                     brcvar)
+    BRCDOWNLOAD_SERVER('brcdownload', brc_data_num, brc_data_text, brcvar)
   }
 
 

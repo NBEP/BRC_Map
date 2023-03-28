@@ -31,7 +31,7 @@ BRCDOWNLOAD_UI <- function(id) {
 ###                       Server Function                           ####
 ########################################################################.
 
-BRCDOWNLOAD_SERVER <- function(id, brcvar) {
+BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
   moduleServer(
     id, 
     function(input, output, session) {
@@ -55,7 +55,7 @@ BRCDOWNLOAD_SERVER <- function(id, brcvar) {
         df_site <- df_site() %>%
           select(BRC_CODE, SITE_NAME)
         
-        df_data <- brcvar$df_data()
+        df_data <- brc_data_num
         
         # Merge data
         df_merge <- merge(x=df_site, y=df_data, by='BRC_CODE') %>%

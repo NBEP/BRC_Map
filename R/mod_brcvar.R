@@ -20,7 +20,7 @@ BRCVAR_UI <- function(id, brc_data_num, brc_data_text, brc_data_score) {
 
   # List parameters ----
   parList_score <- sort(unique(brc_data_score$PARAMETER))
-  parList_graph <- sort(c('Water Depth', parList_score))
+  parList_graph <- sort(unique(c('Conductivity', 'Water Depth', parList_score)))
   parList_all <- sort(c(parList_graph, unique(brc_data_text$PARAMETER)))
 
   # List watersheds -----

@@ -191,12 +191,10 @@ BRCGRAPHS_SERVER <- function(id, brc_sites, brc_parameters, brc_data_num,
 
         site_conductivity <- df_site() %>%
           select(SITE_NAME, CONDUCTIVITY_USCM) %>%
-          mutate(CONDUCTIVITY_USCM = 300) %>%
           filter(!is.na(CONDUCTIVITY_USCM))
 
         site_waterdepth <- df_site() %>%
           select(SITE_NAME, WATER_DEPTH_FT) %>%
-          mutate(WATER_DEPTH_FT = 4) %>%
           filter(!is.na(WATER_DEPTH_FT))
 
         param <- brcvar$catSelect_graph()
@@ -233,12 +231,13 @@ BRCGRAPHS_SERVER <- function(id, brc_sites, brc_parameters, brc_data_num,
                                {site_values[2]} {units} for {site_names[2]}, and
                                {site_values[3]} {units} for {site_names[3]}')
           } else if (length(site_names) == 2) {
-            value_list <- glue('please work ')
+            value_list <- glue('{site_values[1]} {units} for {site_names[1]} and
+                               {site_values[2]} {units} for {site_names[2]}')
           } else {
             value_list <- glue('{site_values[1]} {units} for {site_names[1]}')
           }
 
-          if (site_names != 'no data'){
+          if (!('no data' %in% site_names)){
             param_sentence <- glue('The baseline {tolower(param)} is
                                  {value_list}.')
           }
