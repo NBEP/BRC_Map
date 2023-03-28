@@ -1,0 +1,37 @@
+Package: BRC_Map
+Title: Blackstone River Coalition Water Quality Data
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Mariel",
+           family = "Sorlien",
+           role = c("aut", "cre"),
+           email = "msorlien@nbep.org"),
+      person(given = "Dan",
+           family = "Crocker",
+           role = "ctb")
+           )
+Description: Displays water quality data collected by the Blackstone River Coalition.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10),
+    tidyverse
+LazyData: true
+Imports: 
+    bslib,
+    DT,
+    glue,
+    highcharter,
+    knitr,
+    leaflegend,
+    leaflet,
+    lubridate,
+    pkgload,
+    rmarkdown,
+    sf,
+    shiny,
+    shinya11y,
+    shinyWidgets,
+    writexl
