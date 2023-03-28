@@ -2,7 +2,7 @@
 #  TITLE: mod_brcGraphs.R
 #  DESCRIPTION: A module that generates graphs for BRC water quality data
 #  AUTHOR(S): Mariel Sorlien, Dan Crocker
-#  DATE LAST UPDATED: 2023-03-27
+#  DATE LAST UPDATED: 2023-03-28
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.

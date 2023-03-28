@@ -2,13 +2,16 @@
 #  TITLE: app.R
 #  DESCRIPTION: R shiny app for displaying BRC water quality data
 #  AUTHOR(S): Mariel Sorlien
-#  DATE LAST UPDATED: 2023-03-27
+#  DATE LAST UPDATED: 2023-03-28
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt)  x86_64
 ##############################################################################.
 
 library(shiny)
 library(tidyverse)
+
+# For testing
+library(shinya11y)
 
 BRC_Map <- function(...){
 
