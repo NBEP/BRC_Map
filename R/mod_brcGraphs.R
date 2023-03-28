@@ -2,12 +2,11 @@
 #  TITLE: mod_brcGraphs.R
 #  DESCRIPTION: A module that generates graphs for BRC water quality data
 #  AUTHOR(S): Mariel Sorlien, Dan Crocker
-#  DATE LAST UPDATED: 2023-02-22
+#  DATE LAST UPDATED: 2023-03-27
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
 
-library('tidyverse')
 library('glue')
 library('highcharter')
 
@@ -75,7 +74,8 @@ BRCGRAPHS_UI <- function(id) {
 #                         Server Function                           ####
 ########################################################################.
 
-BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
+BRCGRAPHS_SERVER <- function(id, brc_sites, brc_parameters, brc_data_num,
+                             brcvar) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -83,29 +83,58 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
       # Filter data ----
       # * Sites ----
       df_site <- reactive({
-        df_site <- sites_db %>%
-          filter(SITE_NAME %in% choice$siteSelect_1())
+        df_site <- brc_sites %>%
+          filter(SITE_NAME %in% brcvar$siteSelect_graph())
 
         return(df_site)
       })
 
-      # * Data ----
-      df_data <- reactive({
-        req(choice$catSelect_1())
-
-        df_data <- choice$df_data() %>%
-          filter(PARAMETER == choice$catSelect_1())
-
-        return(df_data)
-      })
-
       # * Parameters -----
 
-      df_param <- reactive({
-        req(choice$catSelect_1())
+      # Drop rows with null data (nonreactive)
+      df_param <- brc_parameters %>%
+        filter(!is.na(AVG) & !is.na(AVG_CWF) & !is.na(EXC) & !is.na(EXC_CWF))
 
-        df_param <- parameters_db %>%
-          filter(PARAMETER_NAME == choice$catSelect_1())
+      # Select data for selected parameter (reactive)
+      df_param_filter <- reactive({
+        req(brcvar$catSelect_graph())
+
+        df_param_filter <- df_param %>%
+          # Select data for selected parameter
+          filter(PARAMETER_NAME == brcvar$catSelect_graph())
+      })
+
+      # * Data ----
+      # Format data (nonreactive, run once)
+      df_data <- brc_data_num %>%
+        # Drop extra rows
+        filter(SAMPLE_TYPE %in% c('Grab', 'Composite', 'Replicate'),
+               RESULT != -999999) %>%
+        # Convert datetime to date
+        mutate(DATE = as.Date(DATE_TIME)) %>%
+        # Add year
+        mutate(YEAR = lubridate::year(DATE_TIME)) %>%
+        # Sort by DATE, SAMPLE_TYPE
+        arrange(DATE, SAMPLE_TYPE) %>%
+        # Group data, take first entry (composite, otherwise grab/replicate)
+        group_by(BRC_CODE, DATE, YEAR, PARAMETER, UNITS) %>%
+        summarise(RESULT = first(RESULT),
+                  SAMPLE_TYPE = first(SAMPLE_TYPE),
+                  .groups = 'drop')
+
+      # Filter for selected parameter, date range (reactive)
+      df_data_filter <- reactive({
+        req(brcvar$catSelect_graph())
+        req(brcvar$dateRange())
+
+        df_data_filter <- df_data %>%
+          # Filter for parameter
+          filter(PARAMETER == brcvar$catSelect_graph()) %>%
+          # Filter for date
+          filter((DATE >= brcvar$dateRange()[1]) &
+                   (DATE <= brcvar$dateRange()[2]))
+
+        return(df_data_filter)
       })
 
       # Join sites, data ----
@@ -114,13 +143,11 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
         df_site <- df_site() %>%
           select(BRC_CODE, SITE_NAME, CFR)
 
-        df_data <- df_data()
+        df_data <- df_data_filter()
 
         df_merge <- merge(x=df_site, y=df_data, by='BRC_CODE') %>%
           # Drop extra columns
-          select(SITE_NAME, CFR, DATE_TIME, YEAR, PARAMETER, RESULT, UNITS) %>%
-          # Convert datetime to date
-          mutate(DATE_TIME = as.Date(DATE_TIME))
+          select(SITE_NAME, CFR, DATE, YEAR, PARAMETER, RESULT, UNITS)
 
         # Rename columns
         names(df_merge) <- c("Site", "CWF", "Date", "Year", "Parameter",
@@ -135,9 +162,9 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
 
       # * Min/Max text
       param_minmax <- reactive({
-        if(nrow(df_param()>0)) {
+        if(nrow(df_param_filter()>0)) {
 
-          if(df_param()$EXC > df_param()$GOOD){
+          if(df_param_filter()$EXC > df_param_filter()$GOOD){
             param_minmax <- 'lowest'
           } else {
             param_minmax <- 'highest'
@@ -152,7 +179,7 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
       # * Header: Parameter ----
 
       output$param_header <- renderUI({
-        HTML(glue('<h2>{choice$catSelect_1()}</h2>'))
+        HTML(glue('<h2>{brcvar$catSelect_graph()}</h2>'))
       })
 
       # * Caption ----
@@ -161,16 +188,65 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
 
         # Define variables
         sites <- df_site()$SITE_NAME
-        site_param <- c('X', 'Y', 'Z')
 
-        param <- choice$catSelect_1()
-        units <- df_data()$UNITS[1]
+        site_conductivity <- df_site() %>%
+          select(SITE_NAME, CONDUCTIVITY_USCM) %>%
+          mutate(CONDUCTIVITY_USCM = 300) %>%
+          filter(!is.na(CONDUCTIVITY_USCM))
 
-        # Generate sentence with min/max acceptable value for coldwater &
-        #   warmwater fisheries
-        if(nrow(df_param()>0)){
-          param_wwf <- df_param()$AVG
-          param_cwf <- df_param()$AVG_CWF
+        site_waterdepth <- df_site() %>%
+          select(SITE_NAME, WATER_DEPTH_FT) %>%
+          mutate(WATER_DEPTH_FT = 4) %>%
+          filter(!is.na(WATER_DEPTH_FT))
+
+        param <- brcvar$catSelect_graph()
+        units <- df_data_filter()$UNITS[1]
+
+        param_sentence = ''
+
+        # Sentence fragment - list of sites
+        if (length(sites) == 3){
+          site_list <- glue('{sites[1]}, {sites[2]}, and {sites[3]}')
+        } else if (length(sites) == 2) {
+          site_list <- glue('{sites[1]} and {sites[2]}')
+        } else {
+          site_list <- paste(sites[1])
+        }
+
+        # Sentence - baseline, min/max values
+
+        # Sentence for conductivity, Water Depth
+        if (param %in% c('Conductivity', 'Water Depth')) {
+          if(param == 'Conductivity' & nrow(site_conductivity)>0){
+            site_names <- site_conductivity$SITE_NAME
+            site_values <- site_conductivity$CONDUCTIVITY_USCM
+          } else if(param == 'Water Depth' & nrow(site_waterdepth)>0){
+            site_names <- site_waterdepth$SITE_NAME
+            site_values <- site_waterdepth$WATER_DEPTH_FT
+          } else {
+            site_names <- 'no data'
+            site_values <- -999999
+          }
+
+          if (length(site_names) == 3){
+            value_list <- glue('{site_values[1]} {units} for {site_names[1]},
+                               {site_values[2]} {units} for {site_names[2]}, and
+                               {site_values[3]} {units} for {site_names[3]}')
+          } else if (length(site_names) == 2) {
+            value_list <- glue('please work ')
+          } else {
+            value_list <- glue('{site_values[1]} {units} for {site_names[1]}')
+          }
+
+          if (site_names != 'no data'){
+            param_sentence <- glue('The baseline {tolower(param)} is
+                                 {value_list}.')
+          }
+
+          # Sentence for other parameters
+        } else if(nrow(df_param_filter())>0){
+          param_wwf <- df_param_filter()$AVG
+          param_cwf <- df_param_filter()$AVG_CWF
 
           if(param_wwf == param_cwf){
             param_sentence <- glue('The {param_minmax()} acceptable value is
@@ -180,31 +256,6 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
             {param_wwf} {units} for warmwater fisheries and {param_cwf} {units}
             for coldwater fisheries.')
           }
-        } else {
-          param_sentence = ''
-        }
-
-        # Generate sentence fragment with list of sites & sentence fragment with
-        #   baseline site data for conductivity, water depth
-
-        if (length(sites) == 3){
-          site_list <- glue('{sites[1]}, {sites[2]}, and {sites[3]}')
-          value_list <- glue('{site_param[1]} {units} for {sites[1]},
-          {site_param[2]} {units} for {sites[2]}, and {site_param[3]} {units}
-                             for {sites[3]}')
-        } else if (length(sites) == 2) {
-          site_list <- glue('{sites[1]} and {sites[2]}')
-          value_list <- glue('{site_param[1]} {units} for {sites[1]} and
-          {site_param[2]} {units} for {sites[2]}')
-        } else {
-          site_list <- paste(sites[1])
-          value_list <- glue('{site_param[1]} {units} for {sites[1]}')
-        }
-
-        # Assemble sentence with baseline site data for conductivity, water depth
-        if (param %in% c('Conductivity', 'Water Depth')) {
-          param_sentence <- glue('The baseline {tolower(param)} is
-                                 {value_list}.')
         }
 
         # Assemble sentences to generate complete caption
@@ -222,10 +273,10 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
         df_site <- df_site() %>%
           unite('Town', TOWN:STATE, sep=', ') %>%
           # Rename columns
-          rename(Site=SITE_NAME, Waterbody=WATERBODY_NAME, Fishery=FISHERY,
-                 Watershed=HUC12_NAME)  %>%
+          rename(Site=SITE_NAME, Waterbody=WATERBODY_NAME,
+                 'Coldwater Fishery'=CFR, Watershed=HUC12_NAME)  %>%
           # Arrange columns, drop any column not listed
-          select(Site, Waterbody, Fishery, Town, Watershed)
+          select(Site, Waterbody, 'Coldwater Fishery', Town, Watershed)
 
         return(df_site)
 
@@ -293,12 +344,12 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
       hc_plot <- function(df) {
 
         # Define variables ----
-        par <- choice$catSelect_1()
-        unit <- df_data()$UNITS[1]
-        min_par <- min(df_data()$RESULT)
-        max_par <- max(df_data()$RESULT)
+        par <- brcvar$catSelect_graph()
+        unit <- df_data_filter()$UNITS[1]
+        min_par <- min(df_data_filter()$RESULT)
+        max_par <- max(df_data_filter()$RESULT)
 
-        df_param <- df_param()
+        df_param_filter <- df_param_filter()
 
         # Define Y-axis
         ylab <- glue("{par} ({unit})")
@@ -310,12 +361,12 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
         plotlines_yaxis = NULL
 
         # Add plotlines, plotbands if data available
-        if(nrow(df_param)>0) {
-          par_cutoff = df_param$AVG
-          par_cutoff_cwf = df_param$AVG_CWF
+        if(nrow(df_param_filter)>0) {
+          par_cutoff = df_param_filter$AVG
+          par_cutoff_cwf = df_param_filter$AVG_CWF
 
           # Set lower/upper range for plotbands
-          if (df_param$EXC > df_param$GOOD) {
+          if (df_param_filter$EXC > df_param_filter$GOOD) {
             # Set lower bound
             minmax_value = min(c(min_par, par_cutoff, par_cutoff_cwf,
                                  0))
@@ -368,7 +419,7 @@ BRCGRAPHS_SERVER <- function(id, sites_db, parameters_db, choice) {
             plotlines_yaxis = list(plotlines_hot)
           }
 
-        } # End if nrow(df_param)>0
+        } # End if nrow(df_param_filter)>0
 
         # Create graph ----
         hc_graph <- highchart() %>%
