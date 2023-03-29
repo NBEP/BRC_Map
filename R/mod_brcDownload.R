@@ -2,7 +2,7 @@
 #  TITLE: mod_brcDownload.R
 #  DESCRIPTION: A module that lets users download BRC water quality data
 #  AUTHOR(S): Mariel Sorlien
-#  DATE LAST UPDATED: 2023-03-28
+#  DATE LAST UPDATED: 2023-03-29
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
@@ -21,11 +21,8 @@ BRCDOWNLOAD_UI <- function(id) {
     h2('Suggested Citation'),
     h2('Download Data'),
     downloadButton(ns('dl_xls'), 'Download excel'),
-    # downloadButton(ns('dl_csv'), 'Download csv'),
-    h3('Site Data'),
-    downloadButton(ns('dl_site_csv'), 'Download csv'),
-    h3('Parameter Data'),
-    downloadButton(ns('dl_data_csv'), 'Download csv'),
+    downloadButton(ns('dl_csv'), 'Download csv'),
+    downloadButton(ns('dl_tsv'), 'Download tsv'),
   ) 
 }
 
@@ -42,7 +39,11 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
       # * Site data ----
       df_site <- reactive({
         
-        df_site <- brcvar$df_site()
+        df_site <- brcvar$df_site() %>%
+          # Replace NA with -999999
+          replace(is.na(.), -999999) %>%
+          mutate(SITE_NUMBER = case_when(SITE_NUMBER=='NA' ~ '-999999',
+                                         TRUE ~ SITE_NUMBER))
         
         return(df_site)
       })
@@ -66,7 +67,10 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
           # Reorder columns
           relocate(SITE_NAME, .after = BRC_CODE) %>%
           # Sort
-          arrange(DATE_TIME, BRC_CODE, PARAMETER)
+          arrange(DATE_TIME, BRC_CODE, PARAMETER) %>%
+          # Change date format
+          mutate(DATE_TIME = format(DATE_TIME, format="%Y-%m-%d %H:%M %Z")) %>%
+          mutate_at("DATE_TIME", as.character)
         
         return(df_merge)
       })
@@ -90,7 +94,10 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
           # Reorder columns
           relocate(SITE_NAME, .after = BRC_CODE) %>%
           # Sort
-          arrange(DATE_TIME, BRC_CODE, PARAMETER)
+          arrange(DATE_TIME, BRC_CODE, PARAMETER) %>%
+          # Change date format
+          mutate(DATE_TIME = format(DATE_TIME, format="%Y-%m-%d %H:%M %Z")) %>%
+          mutate_at("DATE_TIME", as.character)
         
         return(df_merge)
       })
@@ -121,6 +128,9 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
       )
       
       # Download csv ----
+      # Code based on stackoverflow answer by yben at 
+      # https://stackoverflow.com/questions/43916535/
+      
       output$dl_csv <- downloadHandler(
         filename = function() {"brc_data.zip"},
         
@@ -133,9 +143,10 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
           files <- NULL
           
           # loop on data to download and write individual csv's
-          for (i in data_list()) {
+          for (i in 1:length(data_list())) {
             fileName <- paste0(names(data_list())[i], ".csv") # csv file name
-            write.csv(data_list()[[i]], fileName) # write csv in temp dir
+            write.csv(data_list()[[i]], fileName, 
+                      row.names=FALSE) # write csv in temp dir
             files <- c(files, fileName) # store written file name
           }
           
@@ -144,21 +155,28 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
         }
       )
       
-      
-      
-      # * Sites ----
-      output$dl_site_csv <- downloadHandler(
-        filename = function() {"brc_sites.csv"},
+      # Download tsv ----
+      output$dl_tsv <- downloadHandler(
+        filename = function() {"brc_data.zip"},
+        
         content = function(file) {
-          write.csv(df_site(), file, row.names = FALSE)
-        }
-      )
-      
-      # * Param ----
-      output$dl_data_csv <- downloadHandler(
-        filename = function() {"brc_data.csv"},
-        content = function(file) {
-          write.csv(df_data(), file, row.names = FALSE)
+          
+          # temp dir for the tsv's as we can only create
+          # an archive from existent files and not data from R
+          twd <- setwd(tempdir())
+          on.exit(setwd(twd))
+          files <- NULL
+          
+          # loop on data to download and write individual tsv's
+          for (i in 1:length(data_list())) {
+            fileName <- paste0(names(data_list())[i], ".tsv") # tsv file name
+            write.table(data_list()[[i]], fileName, 
+                        sep='\t', row.names = FALSE) # write tsv in temp dir
+            files <- c(files, fileName) # store written file name
+          }
+          
+          # create archive from written files
+          archive_write_files(file, files)
         }
       )
       

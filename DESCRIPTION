@@ -20,6 +20,7 @@ Depends:
     tidyverse
 LazyData: true
 Imports: 
+    archive,
     bslib,
     DT,
     glue,
@@ -34,4 +35,5 @@ Imports:
     shiny,
     shinya11y,
     shinyWidgets,
+    tidyr,
     writexl
