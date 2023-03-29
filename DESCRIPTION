@@ -24,6 +24,7 @@ Imports:
     DT,
     glue,
     highcharter,
+    kableExtra,
     knitr,
     leaflegend,
     leaflet,
