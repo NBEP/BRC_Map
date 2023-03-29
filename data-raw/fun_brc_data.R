@@ -2,7 +2,7 @@
 #  TITLE: fun_brc_data.R
 #  DESCRIPTION: Formats numerical data for BRC_Map, calculates score
 #  AUTHOR(S): Mariel Sorlien
-#  DATE LAST UPDATED: 2023-03-27
+#  DATE LAST UPDATED: 2023-03-29
 #  GIT REPO:
 #  R version 4.2.0 (2022-04-22 ucrt) x86_64
 ##############################################################################.
@@ -50,15 +50,16 @@ brcmap_format_data <- function(parameters_db, sites_db, data_num_db,
   # * Calc avg for replicates ----
   # Make list of parameters with replicate values
   df_replicates <- df_data_num %>%
-    filter(SAMPLE_TYPE == 'Replicate')
-
-  list_replicates <- unique(df_replicates$PARAMETER)
-
+    filter(SAMPLE_TYPE == 'Replicate') %>%
+    select('BRC_CODE', 'DATE_TIME', 'PARAMETER')
+  
   # Calculate average
-  df_composite <- df_data_num %>%
-    # Only select data with replicates
-    filter(PARAMETER %in% list_replicates,
-           SAMPLE_TYPE %in% c('Grab', 'Replicate'),
+  # Select data for site/date/parameter combo with replicate
+  df_composite <- merge(x=df_replicates, y=df_data_num, 
+                        by=c('BRC_CODE', 'DATE_TIME', 'PARAMETER'), 
+                        all.x=TRUE) %>%
+    # Drop null data, blanks
+    filter(SAMPLE_TYPE %in% c('Grab', 'Replicate'),
            RESULT != -999999) %>%
     # Group data, calc average
     group_by(BRC_CODE, DATE_TIME, PARAMETER, UNITS) %>%
@@ -68,8 +69,10 @@ brcmap_format_data <- function(parameters_db, sites_db, data_num_db,
     mutate(SAMPLE_TYPE = 'Composite')
 
   # * Add composite scores to numeric data ----
-  brc_data_num <- bind_rows(df_data_num, df_composite)
-
+  brc_data_num <- bind_rows(df_data_num, df_composite) %>%
+    # Sort by date, site, parameter
+    arrange(DATE_TIME, BRC_CODE, PARAMETER)
+    
   # * Save output ----
   save(brc_data_num, file=file.path(output_path, 'brc_data_num.rda'))
 
