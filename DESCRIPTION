@@ -20,7 +20,6 @@ Depends:
     tidyverse
 LazyData: true
 Imports: 
-    archive,
     bslib,
     DT,
     glue,

@@ -8,7 +8,6 @@
 ##############################################################################.
 
 library(writexl)
-library(archive)
 
 ########################################################################.
 ###                       User Interface                            ####
@@ -151,7 +150,7 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
           }
           
           # create archive from written files
-          archive_write_files(file, files)
+          system2("zip", args=(paste(file,files,sep=" ")))
         }
       )
       
@@ -176,7 +175,7 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
           }
           
           # create archive from written files
-          archive_write_files(file, files)
+          system2("zip", args=(paste(file,files,sep=" ")))
         }
       )
       
