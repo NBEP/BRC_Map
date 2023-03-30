@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 rsconnect
+data-raw/data_num_db.rds
+data-raw/data_text_db.rds
+data-raw/parameters_db.rds
+data-raw/sites_db.rds

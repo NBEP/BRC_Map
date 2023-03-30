@@ -18,6 +18,7 @@ BRCDOWNLOAD_UI <- function(id) {
   
   tagList(
     h2('Suggested Citation'),
+    textOutput(ns('brc_citation')),
     h2('Download Data'),
     downloadButton(ns('dl_xls'), 'Download excel'),
     downloadButton(ns('dl_csv'), 'Download csv'),
@@ -33,6 +34,15 @@ BRCDOWNLOAD_SERVER <- function(id, brc_data_num, brc_data_text, brcvar) {
   moduleServer(
     id, 
     function(input, output, session) {
+      
+      # Citation ----
+      output$brc_citation <- renderText({ 
+        paste0("Blackstone River Coalition, ", format(Sys.time(), "%Y"), 
+        ", Blackstone River Watershed-wide Volunteer Water Quality 
+        Monitoring Program data available on the world wide web, accessed [",
+        format(Sys.time(), "%B %d, %Y"), 
+        "], at URL [https://zaptheblackstone.org].")
+      })
       
       # Format data ----
       # * Site data ----
