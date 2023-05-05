@@ -1,7 +1,6 @@
 # Blackstone River Coalition Water Quality Map
 Interactive map of water quality data for the Blackstone River Coalition. 
 
-# Acknowledgements
 This project was funded by agreements by the Environmental Protection Agency (EPA) to Roger Williams University (RWU) 
 in partnership with the Narragansett Bay Estuary Program. Although the information in this document has been funded 
 wholly or in part by EPA under the agreements CE00A00967 to RWU, it has not undergone the Agency’s publications review 
